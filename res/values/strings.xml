@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ComicViewerV1</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="dummy_button">Dummy Button</string>
-
+    <string name="app_name">모나리자 만화뷰어</string>
+    <string name="button_open_library">책장열기</string>
+    <string name="button_change_library">책장경로변경</string>
+    <string name="button_read_direction">읽기방향변경</string>
+    <string name="label_l2r">좌에서 우로</string>
+	<string name="label_r2l">우에서 좌로</string>
+	<string name="book_title">책제목 : </string>
+	<string name="page_info">현재책장 : </string>
+	<string name="read_direction">읽기방향 : </string>
+	<string name="library_root">책장경로 : </string>
+	
 </resources>

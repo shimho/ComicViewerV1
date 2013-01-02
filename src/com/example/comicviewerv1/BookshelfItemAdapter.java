@@ -42,8 +42,12 @@ public class BookshelfItemAdapter extends ArrayAdapter<BookshelfItem>
         	TextView tvDesc = (TextView) convertView.findViewById(R.id.book_item_row_desc);
         	
         	tvTitle.setText(bookItem.getTitle());
-        	tvDesc.setText(bookItem.getBody());
-        	ivThumbnail.setImageResource(R.drawable.ic_launcher);
+        	tvDesc.setText("ÀüÃ¼ "+bookItem.getNumOfBooks()+"±Ç");
+        	if (bookItem.getCover() != null) {
+        		ivThumbnail.setImageBitmap(bookItem.getCover());
+        	} else {
+        		ivThumbnail.setImageResource(R.drawable.ic_launcher);
+        	}
         }
         
         return convertView;

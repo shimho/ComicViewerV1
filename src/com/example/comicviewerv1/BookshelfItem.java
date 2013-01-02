@@ -1,25 +1,35 @@
 package com.example.comicviewerv1;
 
+import android.graphics.Bitmap;
+
 public class BookshelfItem {
 	private int id;
 	private String title;
-	private String body;
+	private String fullPath;
+	private Bitmap cover;
+	private int numOfBooks;
 	
-	public BookshelfItem(int id, String title, String body) {
-		this.id = id;
+	public BookshelfItem(String title, String fullPath,
+						Bitmap cover, int numOfBooks) {
 		this.title = title;
-		this.body = body;
+		this.fullPath = fullPath;
+		this.numOfBooks = numOfBooks;
+		this.cover = cover;
 	}
-	
-	public int getId() {
-		return id;
-	}
-	
+
 	public String getTitle() {
-		return title;
+		return this.title;
 	}
 	
-	public String getBody() {
-		return body;
+	public String getFullPath() {
+		return this.fullPath;
+	}
+	
+	public Bitmap getCover() {
+		return this.cover;
+	}
+	
+	public int getNumOfBooks() {
+		return this.numOfBooks;
 	}
 }

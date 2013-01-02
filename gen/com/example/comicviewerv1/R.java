@@ -23,15 +23,22 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class drawable {
         public static final int ic_launcher=0x7f020000;
+        public static final int monarisa=0x7f020001;
     }
     public static final class id {
-        public static final int book_item_row_desc=0x7f070006;
-        public static final int book_item_row_thumbnail=0x7f070004;
-        public static final int book_item_row_title=0x7f070005;
-        public static final int bookshelf_list=0x7f070000;
-        public static final int dummy_button=0x7f070003;
+        public static final int book_item_row_desc=0x7f07000c;
+        public static final int book_item_row_thumbnail=0x7f07000a;
+        public static final int book_item_row_title=0x7f07000b;
+        public static final int bookshelf_grid=0x7f070000;
+        public static final int button_change_library=0x7f070009;
+        public static final int button_open_library=0x7f070007;
+        public static final int button_read_direction=0x7f070008;
         public static final int fullscreen_content=0x7f070001;
-        public static final int fullscreen_content_controls=0x7f070002;
+        public static final int fullscreen_controls=0x7f070002;
+        public static final int text_book_title=0x7f070003;
+        public static final int text_library_root=0x7f070006;
+        public static final int text_page_info=0x7f070004;
+        public static final int text_read_direction=0x7f070005;
     }
     public static final class layout {
         public static final int activity_bookshelf=0x7f030000;
@@ -40,8 +47,15 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class string {
         public static final int app_name=0x7f050000;
-        public static final int dummy_button=0x7f050002;
-        public static final int dummy_content=0x7f050001;
+        public static final int book_title=0x7f050006;
+        public static final int button_change_library=0x7f050002;
+        public static final int button_open_library=0x7f050001;
+        public static final int button_read_direction=0x7f050003;
+        public static final int label_l2r=0x7f050004;
+        public static final int label_r2l=0x7f050005;
+        public static final int library_root=0x7f050009;
+        public static final int page_info=0x7f050007;
+        public static final int read_direction=0x7f050008;
     }
     public static final class style {
         /** 

@@ -2,53 +2,126 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#FFFFFF"
     tools:context=".FullscreenActivity" >
 
-    <!--
-         The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc.
-    -->
 
-    <TextView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
-
-    <!--
-         This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows.
-    -->
+	<LinearLayout
+	    android:id="@+id/fullscreen_content"
+	    android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+ 
 
     <FrameLayout
+        android:id="@+id/fullscreen_controls"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true" >
+        <LinearLayout 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="30dp"  
+            android:orientation="vertical"
+            tools:ignore="UselessParent" >
+            <LinearLayout 
+            	android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:orientation="horizontal">
+            	<TextView 
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text="@string/book_title"/>
+	            <TextView 
+	                android:id="@+id/text_book_title"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text=""/>
+            </LinearLayout>
+            <LinearLayout 
+            	android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:orientation="horizontal">
+            	<TextView 
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text="@string/page_info"/>
+	            <TextView 
+	                android:id="@+id/text_page_info"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text=""/>
+            </LinearLayout>
+            <LinearLayout 
+            	android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:orientation="horizontal">
+            	<TextView 
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text="@string/read_direction"/>
+	            <TextView 
+	                android:id="@+id/text_read_direction"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text=""/>
+            </LinearLayout>
+            <LinearLayout 
+            	android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:orientation="horizontal">
+            	<TextView 
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text="@string/library_root"/>
+	            <TextView 
+	                android:id="@+id/text_library_root"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:textSize="20dip"
+	                android:text=""/>
+            </LinearLayout>
+ 
+        </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
             style="?buttonBarStyle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
+            android:layout_gravity="bottom|center"
             android:orientation="horizontal"
             tools:ignore="UselessParent" >
-
-            <Button
-                android:id="@+id/dummy_button"
+			<Button
+                android:id="@+id/button_open_library"
                 style="?buttonBarButtonStyle"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/dummy_button" />
+                android:text="@string/button_open_library" />
+            <Button
+                android:id="@+id/button_read_direction"
+                style="?buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/button_read_direction" />
+            <Button
+                android:id="@+id/button_change_library"
+                style="?buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/button_change_library" />
+            
+ 
         </LinearLayout>
     </FrameLayout>
 
