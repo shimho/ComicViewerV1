@@ -16,9 +16,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -53,10 +58,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	private ComicImageView mComicImageView = null;
 	private AppConfig mAppConfig = null;
 	private GestureDetector mGestureDetector = null;;
-	private String mCurrentBookFilePath;
-	private ArrayList<BookPage> mBookPages;
-	private int mCurrentPageIndex = 0;
-	
+	private ReadingBookInfo mCurrentBook = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,34 +67,102 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		setContentView(R.layout.activity_fullscreen);
 		loadPreferences();
 		
+		
+		
 		mComicImageView = new ComicImageView(this);
 		LinearLayout fullLayout = (LinearLayout)findViewById(R.id.fullscreen_content);
 		fullLayout.addView(mComicImageView);
 		mGestureDetector =  new GestureDetector(getApplicationContext(), this);
-		mBookPages = new ArrayList<BookPage>();
 		
 		FrameLayout controlLayout = (FrameLayout)findViewById(R.id.fullscreen_controls);
 		controlLayout.setVisibility(View.INVISIBLE);
-		 
-		
+	}
 	
-		Button btnOpenBookShelf = (Button)findViewById(R.id.button_open_library);
-		btnOpenBookShelf.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(FullscreenActivity.this, BookshelfActivity.class);
-					startActivityForResult(intent, ACTIVITY_BOOK_SELECTION);
-			}
-		});
+	public void openLibrary(View v) {
+		Intent intent = new Intent(FullscreenActivity.this, BookshelfActivity.class);
+		startActivityForResult(intent, ACTIVITY_BOOK_SELECTION);
+	}
+	
+	public void toggleReadDirection(View v) {
+		mAppConfig.setFlagLeftToRight(!mAppConfig.getFlagLeftToRight());
+		updateControlViewInfo();
+		openPage(ComicImageView.SLIDE_NO_EFFECT);
+	}
+	
+	public void changeLibraryPath(View v) {
+		// TODO
+	}
+	
+	public void leftBook(View v) {
+		if (mAppConfig.getFlagLeftToRight()) 
+			prevBook(v);
+		else
+			nextBook(v);
+	}
+	
+	public void rightBook(View v) {
+		if (mAppConfig.getFlagLeftToRight()) 
+			nextBook(v);
+		else
+			prevBook(v);
+	}
+	
+	public void prevBook(View v) {
 		
-		Button btnToggleDirection = (Button)findViewById(R.id.button_read_direction);
-		btnToggleDirection.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				mAppConfig.setFlagLeftToRight(!mAppConfig.getFlagLeftToRight());
-				updateControlViewInfo();
-			}
-		});
+		if (mCurrentBook.prevBook()) {
+			openPage(ComicImageView.SLIDE_NO_EFFECT);
+		} else {
+			Toast.makeText(getApplicationContext(), R.string.firstbook,
+					Toast.LENGTH_SHORT).show();
+		}
+		updateControlViewInfo();
+	}
+	
+	public void nextBook(View v) {
+		if (mCurrentBook.nextBook()) {
+			openPage(ComicImageView.SLIDE_NO_EFFECT);
+		} else {
+			Toast.makeText(getApplicationContext(), R.string.lastbook,
+					Toast.LENGTH_SHORT).show();
+		}
+		updateControlViewInfo();
+	}
+	
+	public void left20Page(View v) {
+		if (mAppConfig.getFlagLeftToRight()) 
+			prev20Page(v);
+		else
+			next20Page(v);
+	}
+	
+	public void right20Page(View v) {
+		if (mAppConfig.getFlagLeftToRight()) 
+			next20Page(v);
+		else
+			prev20Page(v);
+	}
+	
+	public void prev20Page(View v) {
+		if (mCurrentBook.prevPage(20)) {
+			openPage(ComicImageView.SLIDE_NO_EFFECT);
+		} else {
+			Toast.makeText(getApplicationContext(), R.string.firstpage,
+						Toast.LENGTH_SHORT).show();
+		}
+		updateControlViewInfo();
+	}
+	
+	public void next20Page(View v) {
+		if (mCurrentBook.nextPage(20)) {
+			openPage(ComicImageView.SLIDE_NO_EFFECT);
+		} else {
+			Toast.makeText(getApplicationContext(), R.string.lastpage,
+						Toast.LENGTH_SHORT).show();
+		}
+		updateControlViewInfo();
 
 	}
+	
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -126,17 +196,19 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
     }
 	
 	private boolean onActionUp() {
-		if (mBookPages.size() == 0) {
+		if (mCurrentBook == null) {
 			// no book loaded yet
 			return false;
 		}
 		
 		int pageSkip = mComicImageView.finishMove();
-		if (pageSkip > 0) { // move right
-			nextPage();
+		if ((pageSkip > 0 && mAppConfig.getFlagLeftToRight()) ||
+			(pageSkip < 0 && !mAppConfig.getFlagLeftToRight())) {
+			nextPage(1);
 			mComicImageView.finishMove();
-		} else if (pageSkip < 0) { // move left
-			prevPage();
+		} else if ((pageSkip < 0 && mAppConfig.getFlagLeftToRight()) ||
+				   (pageSkip > 0 && !mAppConfig.getFlagLeftToRight())) {
+			prevPage(1);
 			mComicImageView.finishMove();
 		}
 		mComicImageView.invalidate();
@@ -183,9 +255,24 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
     }
     
     private void showControlView() {
-    	FrameLayout controlLayout = (FrameLayout)findViewById(R.id.fullscreen_controls);
+    	
     	updateControlViewInfo();
+    	
+    	int pageButtonVisibility = View.VISIBLE;
+    	if (mCurrentBook == null) {
+    		// hide some bottuns, not applicable when no book is loaded
+    		pageButtonVisibility = View.INVISIBLE;
+    	}
+    		
+    	((Button)findViewById(R.id.button_next_20page)).setVisibility(pageButtonVisibility);
+    	((Button)findViewById(R.id.button_prev_20page)).setVisibility(pageButtonVisibility);
+    	((Button)findViewById(R.id.button_next_book)).setVisibility(pageButtonVisibility);
+    	((Button)findViewById(R.id.button_prev_book)).setVisibility(pageButtonVisibility);
+	
+    	FrameLayout controlLayout = (FrameLayout)findViewById(R.id.fullscreen_controls);
     	controlLayout.setVisibility(View.VISIBLE); 
+    	
+    	
     }
     
     private void hideControlView() {
@@ -204,16 +291,21 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
     
     private void updateControlViewInfo() {
     	
-    	if (mBookPages.size() > 0) {
+    	if (mCurrentBook != null) {
     		// remove library path from book file path
     		String bookTitle;
-    		bookTitle = mCurrentBookFilePath.substring(mAppConfig.getLibraryRootPath().length());
+    		bookTitle = mCurrentBook.getBookTitle();
     		
     		TextView tvTitle = (TextView)findViewById(R.id.text_book_title);
     		tvTitle.setText(bookTitle);
         	
         	TextView tvPage = (TextView)findViewById(R.id.text_page_info);
-        	String pageInfo = "" + mCurrentPageIndex + "/" + mBookPages.size();
+        	
+        	String pageInfo = "";
+        	if (mCurrentBook.getTotalBooks() > 1) {
+        		pageInfo += mCurrentBook.getCurrentBookIndex()+1 + "/"+ mCurrentBook.getTotalBooks() + "권  ";
+        	}
+        	pageInfo += mCurrentBook.getCurrentPageIndex()+1 + "/" + mCurrentBook.getTotalPages() + "페이지";
         	tvPage.setText(pageInfo);
 
     	}
@@ -223,9 +315,9 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
     	
     	TextView tvDirection = (TextView)findViewById(R.id.text_read_direction);
     	if (mAppConfig.getFlagLeftToRight()) {
-    		tvDirection.setText("Left->Right");
+    		tvDirection.setText(R.string.label_l2r);
     	} else {
-    		tvDirection.setText("Right->Left");
+    		tvDirection.setText(R.string.label_r2l);
     	}
 
     }
@@ -234,28 +326,11 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	final int MAX_JPG_SIZE = 1024*1024;
 	private boolean loadBook(String bookFilePath) {
 		hideControlView();
-		mBookPages.clear();
-		mCurrentBookFilePath = bookFilePath;
-		try {
-			int zipOffset = 0;
-	        FileInputStream fis = new FileInputStream(bookFilePath);
-	        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-	        ZipEntry entry;
-	        while((entry = zis.getNextEntry()) != null) {
-	        	String filename = entry.getName();
-	            int zipSize = (int)entry.getSize();
-	            
-	            mBookPages.add(new BookPage(filename, zipOffset, zipSize));
-	            zipOffset += zipSize;
-	        }
-	        zis.close();
-		} catch(Exception e) {
-			e.printStackTrace();
+		mCurrentBook = new ReadingBookInfo(bookFilePath);
+		if (!mCurrentBook.load(0, 0)) {
 			return false;
-	    }
-		
-		Collections.sort(mBookPages, new BookPageComparator());
-		return openPage(0, ComicImageView.SLIDE_NO_EFFECT);
+		}
+		return openPage(ComicImageView.SLIDE_NO_EFFECT);
 	}
 	
 	/**
@@ -264,58 +339,125 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	 * @param slideEffect : 0 (no slide effect), 1 (slide from right), -1 (slide from left)
 	 * @return
 	 */
-	public boolean openPage(int pageIndex, int slideEffect) {
+	public boolean openPage(int slideEffect) {
+		Bitmap curImg = null, nextImg = null;
+		String currentPageFile, nextPageFile;
+        currentPageFile = mCurrentBook.getPageFile();
+        nextPageFile = mCurrentBook.getNextPageFile();
+        
 		try {
-	        FileInputStream fis = new FileInputStream(mCurrentBookFilePath);
+	        FileInputStream fis = new FileInputStream(mCurrentBook.getBookPath());
 	        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
 	        ZipEntry entry;
 	        while((entry = zis.getNextEntry()) != null) {
-	        	if (entry.getName().compareTo(mBookPages.get(pageIndex).getFilename()) != 0) {
-	        		continue;
+	        	if (entry.getName().compareTo(currentPageFile) == 0) {
+	        		curImg = readBitmapFromZIS(zis);
+	        	} else if (entry.getName().compareTo(nextPageFile) == 0) {
+	        		nextImg = readBitmapFromZIS(zis);
 	        	}
 	        	
-	        	int jpgByte = 0;
-	        	byte jpgData[] = new byte[MAX_JPG_SIZE];
-	        	
-	        	int bufReadByte;
-	        	byte buf[] = new byte[BUFFER];
-	            while ((bufReadByte = zis.read(buf, 0, BUFFER)) != -1) {
-	            	System.arraycopy(buf, 0, jpgData, jpgByte, bufReadByte);
-	            	jpgByte += bufReadByte;
-	            }
-	            
-	            mCurrentPageIndex = pageIndex;
-	            
-	            Bitmap tmpImg = BitmapFactory.decodeByteArray(jpgData, 0, jpgByte);
-		    	mComicImageView.setBitmap(tmpImg, slideEffect);
-		    	mComicImageView.invalidate();
-		    	return true;
+	        	if (curImg != null) {
+	        		if (ComicUtil.isLandscapeImage(curImg)) {
+	        			nextImg = null;
+		        	   	break;
+		        	} else if (nextPageFile.isEmpty()) {
+		        		
+		        		break;
+		        	} else if (nextImg != null) {
+		        		if (ComicUtil.isLandscapeImage(nextImg)) {
+		        			nextImg = null;
+		        		} 
+		        		break;
+		        	}
+	        	}
 	        }
 	        
-	        
+	        zis.close();
 		} catch(Exception e) {
 			e.printStackTrace();
+			return false;
 	    }
+		
+		Bitmap finalImg = null;
+		if (curImg != null && nextImg == null) {
+			mCurrentBook.setShowTwoPages(false);
+			finalImg = curImg;
+			Log.d("HSHIM", "One page view : " + currentPageFile);
+			
+		} else if (curImg != null && nextImg != null) {
+			
+			mCurrentBook.setShowTwoPages(true);
+			Log.d("HSHIM", "Two pages view : " + currentPageFile + "," + nextPageFile);
+			int minWidth, minHeight;
+			minWidth = Math.min(curImg.getWidth(), nextImg.getWidth());
+			minHeight = Math.min(curImg.getHeight(), nextImg.getHeight());
+			
+			curImg = Bitmap.createScaledBitmap(curImg, minWidth, minHeight, false);
+			nextImg = Bitmap.createScaledBitmap(nextImg, minWidth, minHeight, false);
+			finalImg = Bitmap.createScaledBitmap(curImg, minWidth*2,minHeight, true);
+			
+			Paint p = new Paint();
+			p.setDither(true);
+			p.setFlags(Paint.ANTI_ALIAS_FLAG);
+
+			Canvas c = new Canvas(finalImg);
+			c.drawColor(0xffffffff);
+			if (mAppConfig.getFlagLeftToRight()) {
+				c.drawBitmap(curImg, 0, 0, p);
+				c.drawBitmap(nextImg, curImg.getWidth(), 0, p);
+			} else {
+				c.drawBitmap(nextImg, 0, 0, p);
+				c.drawBitmap(curImg, curImg.getWidth(), 0, p);
+			}
+		}
+		
+		if (finalImg != null) {
+			mComicImageView.setBitmap(finalImg, slideEffect);
+		   	mComicImageView.invalidate();
+		   	return true;
+		}
 		return false;
 	}
 	
-	public boolean nextPage() {
-		if (mCurrentPageIndex < mBookPages.size()-1) {
-			openPage(mCurrentPageIndex+1, ComicImageView.SLIDE_FROM_RIGHT);
+	
+	private Bitmap readBitmapFromZIS(ZipInputStream zis) {
+		int jpgByte = 0;
+    	byte jpgData[] = new byte[MAX_JPG_SIZE];
+    	
+    	int bufReadByte;
+    	byte buf[] = new byte[BUFFER];
+		try {
+	        while ((bufReadByte = zis.read(buf, 0, BUFFER)) != -1) {
+	        	System.arraycopy(buf, 0, jpgData, jpgByte, bufReadByte);
+	        	jpgByte += bufReadByte;
+	        }
+		} catch(Exception e) {
+			e.printStackTrace();
+			return null;
+	    }
+        
+        Bitmap tmpImg = BitmapFactory.decodeByteArray(jpgData, 0, jpgByte);
+        return tmpImg;
+	}
+	
+	public boolean nextPage(int n) {
+		
+		if (mCurrentBook.nextPage(n)) {
+			openPage(ComicImageView.SLIDE_FROM_RIGHT);
 		} else {
 			Toast.makeText(getApplicationContext(), 
-						"Last Page", Toast.LENGTH_SHORT).show();
+						R.string.lastpage, Toast.LENGTH_SHORT).show();
 			return false;
 		}
 		return true;
 	}
 	
-	public boolean prevPage() {
-		if (mCurrentPageIndex > 0) {
-			openPage(mCurrentPageIndex-1, ComicImageView.SLIDE_FROM_LEFT);
+	public boolean prevPage(int n) {
+		if (mCurrentBook.prevPage(n)) {
+			openPage(ComicImageView.SLIDE_FROM_LEFT);
 		} else {
 			Toast.makeText(getApplicationContext(), 
-						"First Page", Toast.LENGTH_SHORT).show();
+						R.string.firstpage, Toast.LENGTH_SHORT).show();
 			return false;
 		}
 		return true;
@@ -327,16 +469,15 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		String defaultRoot = Environment.getExternalStorageDirectory().getPath() + "/Comics/";
 		String libraryRootPath = prefs.getString(KEY_LIBRARY_ROOT_PATH, defaultRoot);
 		
-		Log.d("HSHIM", "LibraryRoot="+libraryRootPath);
+		
 		// path sanity check
 		File tmpf = new File(libraryRootPath);
 		if (!tmpf.exists()) {
 			tmpf.mkdir();
-			Log.d("HSHIM", "LibraryRoot created.");
+			
 		}
 		
 		boolean flagLeftToRight = prefs.getBoolean(KEY_LEFT_TO_RIGHT, true);
-		Log.d("HSHIM", "LeftToRight flag="+flagLeftToRight);
 		
 		mAppConfig = new AppConfig(libraryRootPath, flagLeftToRight);
 		savePreferences();

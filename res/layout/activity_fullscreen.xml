@@ -32,14 +32,15 @@
             	<TextView 
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
+	                android:textSize="15dip"
+	                android:textColor="#000000"
 	                android:text="@string/book_title"/>
 	            <TextView 
 	                android:id="@+id/text_book_title"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
-	                android:text=""/>
+	                android:textSize="15dip"
+	                android:textColor="#000000"/>
             </LinearLayout>
             <LinearLayout 
             	android:layout_width="wrap_content"
@@ -48,14 +49,15 @@
             	<TextView 
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
+	                android:textSize="15dip"
+	                android:textColor="#000000"
 	                android:text="@string/page_info"/>
 	            <TextView 
 	                android:id="@+id/text_page_info"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
-	                android:text=""/>
+	                android:textSize="15dip"
+	                android:textColor="#000000" />
             </LinearLayout>
             <LinearLayout 
             	android:layout_width="wrap_content"
@@ -64,14 +66,15 @@
             	<TextView 
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
+	                android:textSize="15dip"
+	                android:textColor="#000000"
 	                android:text="@string/read_direction"/>
 	            <TextView 
 	                android:id="@+id/text_read_direction"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
-	                android:text=""/>
+	                android:textSize="15dip"
+	                android:textColor="#000000"/>
             </LinearLayout>
             <LinearLayout 
             	android:layout_width="wrap_content"
@@ -80,16 +83,16 @@
             	<TextView 
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
+	                android:textSize="15dip"
+	                android:textColor="#000000"
 	                android:text="@string/library_root"/>
 	            <TextView 
 	                android:id="@+id/text_library_root"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:textSize="20dip"
-	                android:text=""/>
+	                android:textSize="15dip"
+	                android:textColor="#000000"/>
             </LinearLayout>
- 
         </LinearLayout>
 
         <LinearLayout
@@ -97,31 +100,103 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent" >
-			<Button
-                android:id="@+id/button_open_library"
-                style="?buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/button_open_library" />
-            <Button
-                android:id="@+id/button_read_direction"
-                style="?buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/button_read_direction" />
-            <Button
-                android:id="@+id/button_change_library"
-                style="?buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/button_change_library" />
-            
- 
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+	        <LinearLayout
+	            style="?buttonBarStyle"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="bottom|center"
+	            android:orientation="horizontal"
+	            android:padding="10dp"
+	            tools:ignore="UselessParent">
+	            <Button
+	                android:id="@+id/button_prev_book"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/prevbook"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="leftBook" />
+	            <Button
+	                android:id="@+id/button_prev_20page"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/prev20page"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="left20Page" />
+	            <Button
+	                android:id="@+id/button_next_20page"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/next20page"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="right20Page" />
+	            <Button
+	                android:id="@+id/button_next_book"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/nextbook"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="rightBook" />
+	        </LinearLayout>
+	        <LinearLayout
+	            style="?buttonBarStyle"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="bottom|center"
+	            android:orientation="horizontal"
+	            android:padding="10dp"
+	            tools:ignore="UselessParent" >
+				<Button
+	                android:id="@+id/button_open_library"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/button_open_library"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="openLibrary" />
+	            <Button
+	                android:id="@+id/button_read_direction"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/button_read_direction"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="toggleReadDirection" />
+	            <Button
+	                android:id="@+id/button_change_library"
+	                style="?buttonBarButtonStyle"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:text="@string/button_change_library"
+	                android:padding="5dp"
+	                android:width="200dp"
+	                android:height="40dp"
+	                android:onClick="changeLibraryPath" />
+	        </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 

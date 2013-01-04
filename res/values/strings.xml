@@ -5,11 +5,19 @@
     <string name="button_open_library">책장열기</string>
     <string name="button_change_library">책장경로변경</string>
     <string name="button_read_direction">읽기방향변경</string>
-    <string name="label_l2r">좌에서 우로</string>
-	<string name="label_r2l">우에서 좌로</string>
+    <string name="label_l2r">좌-&gt;우</string>
+	<string name="label_r2l">좌&lt;-우</string>
 	<string name="book_title">책제목 : </string>
 	<string name="page_info">현재책장 : </string>
 	<string name="read_direction">읽기방향 : </string>
 	<string name="library_root">책장경로 : </string>
+	<string name="next20page">20장&gt;</string>
+	<string name="prev20page">&lt;20장</string>
+	<string name="nextbook">1권&gt;&gt;</string>
+	<string name="prevbook">&lt;&lt;1권</string>
+	<string name="lastbook">마지막권</string>
+	<string name="firstbook">첫권</string>
+	<string name="lastpage">마지막페이지</string>
+	<string name="firstpage">첫페이지</string>
 	
 </resources>

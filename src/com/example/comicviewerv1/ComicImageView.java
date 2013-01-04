@@ -70,7 +70,6 @@ public class ComicImageView extends View {
 		//  width/height
 		float imageRatio = (float)image.getWidth() / (float)image.getHeight();
 		float canvasRatio = (float)canvas.getWidth() / (float)canvas.getHeight();
-		
 		Rect src = new Rect(0, 0, image.getWidth(), image.getHeight());
 
 		float zoomRatio = 0;

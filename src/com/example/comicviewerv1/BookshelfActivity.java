@@ -3,16 +3,21 @@ package com.example.comicviewerv1;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import net.sf.jazzlib.ZipEntry;
+import net.sf.jazzlib.ZipFile;
 import net.sf.jazzlib.ZipInputStream;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -59,7 +64,7 @@ public class BookshelfActivity extends Activity {
 					continue;
 				}
 				
-				if (!FilenameUtils.getExtension(subf.getAbsolutePath()).equalsIgnoreCase("zip")) {
+				if (!ComicUtil.isZipFile(subf.getAbsolutePath())) {
 					continue;
 				}
 				
@@ -67,7 +72,7 @@ public class BookshelfActivity extends Activity {
 				
 				// get cover image from the first zip
 				if (cover == null) {
-					cover = getCoverImage(subf.getAbsolutePath());
+					cover = getCoverImageFromZip(subf.getAbsolutePath());
 				}
 			}
 			
@@ -82,11 +87,11 @@ public class BookshelfActivity extends Activity {
 		} else {
 			// check if it's zip file
 			fullPath = f.getAbsolutePath();
-			if (!FilenameUtils.getExtension(fullPath).equalsIgnoreCase("zip")) {
+			if (!ComicUtil.isZipFile(fullPath)) {
 				return null;
 			}			
 			title = FilenameUtils.getBaseName(f.getName());
-			
+			cover = getCoverImageFromZip(fullPath);
 			numOfBooks = 1;
 		}
 		
@@ -109,47 +114,96 @@ public class BookshelfActivity extends Activity {
      * Find the first image as book cover
      * case1 : bookPath is zip of images
      * case2 : bookPath is zip of zip of images
-     * case3 : bookPath is folder of zip
      */
-    private Bitmap getCoverImage(String bookPath) {
-    	return null;
+    private Bitmap getCoverImageFromZip(String zipFilePath) {
+    	
+    	if (ComicUtil.isNestedZipFile(zipFilePath)) {
+    		// the way of handling nested zip is tricky, so separate the function
+    		return getCoverImageFromNestedZip(zipFilePath);
+    	} 
+    	
+    	Bitmap cover = null;
+    	try {
+    		FileInputStream fis = new FileInputStream(zipFilePath);
+	        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+	        ZipEntry entry;
+	        while((entry = zis.getNextEntry()) != null) {
+	        	String filename = entry.getName();
+	        	if (!ComicUtil.isImageFile(filename)) {
+	        		continue;
+	        	}
+	        	
+	        	cover = getImageFromZEntry(zis, entry);
+	        	break;
+	        }
+	        zis.close();
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} 
+    	return cover;
+    }
+    
+    private Bitmap getCoverImageFromNestedZip(String zipFilePath) {
+    	Bitmap cover = null;
+    	try {
+    		
+	    	ZipFile zipFile = new ZipFile(new File(zipFilePath));
+	    	for(Enumeration e = zipFile.entries(); e.hasMoreElements();){
+	    		ZipEntry entry = (ZipEntry)e.nextElement();
+	    		String filename = entry.getName();
+	        	if (!ComicUtil.isZipFile(filename)) {
+	        		continue;
+	        	}
+	        	
+	        	InputStream is = zipFile.getInputStream(entry);
+	        	ZipInputStream zis = new ZipInputStream(is);
+	        	ZipEntry zentry;
+	        	while ((zentry=zis.getNextEntry()) != null) {
+	        		String subFilename = zentry.getName();
+	        		if (ComicUtil.isImageFile(subFilename)) {
+	        			cover = getImageFromZEntry(zis, zentry);
+	        			break;
+	        		}
+	        	}
+	        	is.close();
+	        	zis.close();
+	        	break;
+	    	}
+	    	
+	    	
+    	} catch (Exception e) {
+			e.printStackTrace();
+	    }
+    	return cover;
     }
     
     final int BUFFER = 2048;
 	final int MAX_JPG_SIZE = 1024*1024;
 
-    private Bitmap getCoverImageOfZip(String bookPath) {
+    private Bitmap getImageFromZEntry(ZipInputStream zis, ZipEntry entry) {
+    	Bitmap cover = null;
     	try {
-			int zipOffset = 0;
-	        FileInputStream fis = new FileInputStream(bookPath);
-	        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-	        ZipEntry entry;
-	        while((entry = zis.getNextEntry()) != null) {
-	        	String filename = entry.getName();
-	        		        	
-/*	        	int jpgByte = 0;
-	        	byte jpgData[] = new byte[MAX_JPG_SIZE];
-	        	
-	        	int bufReadByte;
-	        	byte buf[] = new byte[BUFFER];
-	            while ((bufReadByte = zis.read(buf, 0, BUFFER)) != -1) {
-	            	System.arraycopy(buf, 0, jpgData, jpgByte, bufReadByte);
-	            	jpgByte += bufReadByte;
-	            }
-	            
-	            break;
-	            
-	            int zipSize = (int)entry.getSize();
-	            
-	            mBookPages.add(new BookPage(filename, zipOffset, zipSize));
-	            zipOffset += zipSize; */
+	    	int jpgByte = 0;
+		    byte jpgData[] = new byte[MAX_JPG_SIZE];
+		    int bufReadByte;
+		    byte buf[] = new byte[BUFFER];
+		    while ((bufReadByte = zis.read(buf, 0, BUFFER)) != -1) {
+		       	System.arraycopy(buf, 0, jpgData, jpgByte, bufReadByte);
+		       	jpgByte += bufReadByte;
+		    } 
+			
+		    cover = BitmapFactory.decodeByteArray(jpgData, 0, jpgByte);
+	        // if cover image is landscape, show half of right hand side
+	        // heuristically, that's the cover page
+	        if (cover.getWidth() > cover.getHeight()) {
+	        	cover = Bitmap.createBitmap(cover, cover.getWidth()/2, 0, 
+	        							cover.getWidth()/2, cover.getHeight());
 	        }
-	        zis.close();
-		} catch(Exception e) {
+    	} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 	    }
-    	return null;
+ 
+    	return cover;
     }
 
 
