@@ -45,7 +45,7 @@ import android.widget.Toast;
  * @see SystemUiHider
  */
 public class FullscreenActivity extends Activity implements OnGestureListener {
-
+	private static final String TAG = "FullscreenActivity";
 
 	private static final int ACTIVITY_BOOK_SELECTION = 15;
 	
@@ -66,7 +66,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		
 		setContentView(R.layout.activity_fullscreen);
 		loadPreferences();
-		
+		Log.d(TAG, "onCreate");
 		
 		
 		mComicImageView = new ComicImageView(this);
@@ -257,7 +257,6 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
     private void showControlView() {
     	
     	updateControlViewInfo();
-    	
     	int pageButtonVisibility = View.VISIBLE;
     	if (mCurrentBook == null) {
     		// hide some bottuns, not applicable when no book is loaded
@@ -361,12 +360,13 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	        			nextImg = null;
 		        	   	break;
 		        	} else if (nextPageFile.isEmpty()) {
-		        		
 		        		break;
 		        	} else if (nextImg != null) {
 		        		if (ComicUtil.isLandscapeImage(nextImg)) {
 		        			nextImg = null;
-		        		} 
+		        		} else {
+		        			
+		        		}
 		        		break;
 		        	}
 	        	}

@@ -92,6 +92,7 @@ public class ReadingBookInfo {
 	}
 	
 	private boolean loadZipBook(String path) {
+		mBookPages.clear();
 		try {
 			FileInputStream fis = new FileInputStream(path);
 	        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
@@ -107,11 +108,6 @@ public class ReadingBookInfo {
 	    }
 		
 		Collections.sort(mBookPages, new IndexedStringComparator());
-		
-		if (mCurrentPageIndex >= mBookPages.size()) {
-			// reset if invalid page index
-			mCurrentPageIndex = 0;
-		}
 		return true;
 	}
 	
@@ -198,7 +194,7 @@ public class ReadingBookInfo {
 			return false;
 		}
 		
-			// if prev book exists, open the last page of prev book
+		// if prev book exists, open the last page of prev book
 		mCurrentBookIndex -= 1;
 		if (!loadZipBook(mBookFiles.get(mCurrentBookIndex).getString())) {
 			return false;

@@ -12,7 +12,8 @@ public class ComicImageView extends View {
 	public static final int SLIDE_NO_EFFECT = 0;
 	public static final int SLIDE_FROM_RIGHT = 1;
 	public static final int SLIDE_FROM_LEFT = -1;
-
+	
+	private static final float PAGE_FEED_THRESHOLD = (float)7.0; // 10% slide will make next page
 	private Bitmap image = null;
 	private int slideEffect = SLIDE_NO_EFFECT;
 	private int canvasWidth = 0;
@@ -38,7 +39,7 @@ public class ComicImageView extends View {
 	public int finishMove() {
 		int res = 0;
 		
-		int threshold = (int) ((float)this.canvasWidth * 0.1);
+		int threshold = (int) ((float)this.canvasWidth * PAGE_FEED_THRESHOLD / 100);
 		if (this.hShift > 0 && (this.hShift > threshold)) {
 			res = 1; // move right
 			
