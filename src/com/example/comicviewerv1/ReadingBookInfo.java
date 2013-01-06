@@ -14,7 +14,7 @@ import net.sf.jazzlib.ZipInputStream;
 public class ReadingBookInfo {
 	
 	// absolute path of folder or zip file
-	private String mBookPath;
+	private String mBookTitlePath;
 	private int mSteps = 1;   // 1 for normal, 2 for 2pages view mode
 
 	// zip files
@@ -26,13 +26,19 @@ public class ReadingBookInfo {
 	private ArrayList<IndexedString> mBookPages = null;
 	private int mCurrentPageIndex = -1;
 	
-	public ReadingBookInfo(String bookFilePath) {
-		this.mBookPath = bookFilePath;
+	public ReadingBookInfo(String bookTitlePath) {
+		this.mBookTitlePath = bookTitlePath;
 		this.mBookFiles = new ArrayList<IndexedString>();
 		this.mBookPages = new ArrayList<IndexedString>();
 	}
 	
+	public String getBookTitlePath() {
+		// book folder or top zip file
+		return mBookTitlePath;
+	}
+	
 	public String getBookPath() {
+		// individual zip file
 		return mBookFiles.get(mCurrentBookIndex).getString();
 	}
 	
@@ -48,7 +54,7 @@ public class ReadingBookInfo {
 	}
 	
 	public String getBookTitle() {
-		return FilenameUtils.getBaseName(mBookPath);
+		return FilenameUtils.getBaseName(mBookTitlePath);
 	}
 	
 	public int getTotalBooks() {
@@ -72,16 +78,16 @@ public class ReadingBookInfo {
 	}
 	
 	public boolean load(int bookIndex, int pageIndex) {
-		File topf = new File(mBookPath);
+		File topf = new File(mBookTitlePath);
 		mCurrentBookIndex = bookIndex;
 		mCurrentPageIndex = pageIndex;
 		if (topf.isDirectory()) {
 			if (!loadFolderBook(topf)) 
 				return false;
 			
-		} else if (ComicUtil.isZipFile(mBookPath)) {
-			mBookFiles.add(new IndexedString(mBookPath));
-			if (!loadZipBook(mBookPath)) 
+		} else if (ComicUtil.isZipFile(mBookTitlePath)) {
+			mBookFiles.add(new IndexedString(mBookTitlePath));
+			if (!loadZipBook(mBookTitlePath)) 
 				return false;
 		} else {
 			// not applicable book file

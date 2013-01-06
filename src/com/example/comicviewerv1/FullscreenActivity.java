@@ -50,9 +50,15 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	private static final int ACTIVITY_BOOK_SELECTION = 15;
 	
 	// app setting constants
-	private static final String CONFIG_NAME = "AppSetting";
+	private static final String PREF_CONFIG_NAME = "AppSetting";
 	private static final String KEY_LIBRARY_ROOT_PATH = "library_root_path";
 	private static final String KEY_LEFT_TO_RIGHT = "flag_left_to_right";
+	
+	// last book status constants
+	private static final String PREF_LAST_BOOK = "LastBookSetting";
+	private static final String KEY_LAST_BOOK_TITLE_PATH = "book_title_path";
+	private static final String KEY_LAST_BOOK_INDEX = "last_book_index";
+	private static final String KEY_LAST_PAGE_INDEX = "last_page_index";
 
 
 	private ComicImageView mComicImageView = null;
@@ -76,6 +82,8 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		
 		FrameLayout controlLayout = (FrameLayout)findViewById(R.id.fullscreen_controls);
 		controlLayout.setVisibility(View.INVISIBLE);
+		
+		loadLastBook();
 	}
 	
 	public void openLibrary(View v) {
@@ -178,7 +186,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		                Toast.LENGTH_SHORT
 		            ).show();
 				
-				loadBook(bookFilePath);
+				loadBook(bookFilePath, 0, 0);
 			}
 			
 		}
@@ -323,10 +331,10 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	
 	final int BUFFER = 2048;
 	final int MAX_JPG_SIZE = 1024*1024;
-	private boolean loadBook(String bookFilePath) {
+	private boolean loadBook(String bookFilePath, int bookIndex, int pageIndex) {
 		hideControlView();
 		mCurrentBook = new ReadingBookInfo(bookFilePath);
-		if (!mCurrentBook.load(0, 0)) {
+		if (!mCurrentBook.load(bookIndex, pageIndex)) {
 			return false;
 		}
 		return openPage(ComicImageView.SLIDE_NO_EFFECT);
@@ -411,12 +419,14 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 			}
 		}
 		
-		if (finalImg != null) {
-			mComicImageView.setBitmap(finalImg, slideEffect);
-		   	mComicImageView.invalidate();
-		   	return true;
+		if (finalImg == null) {
+			return false;
 		}
-		return false;
+		
+		mComicImageView.setBitmap(finalImg, slideEffect);
+		mComicImageView.invalidate();
+		saveLastBook();
+		return true;
 	}
 	
 	
@@ -464,7 +474,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	}
 	
 	private void loadPreferences() {
-		SharedPreferences prefs = getSharedPreferences(CONFIG_NAME, MODE_PRIVATE);
+		SharedPreferences prefs = getSharedPreferences(PREF_CONFIG_NAME, MODE_PRIVATE);
 		
 		String defaultRoot = Environment.getExternalStorageDirectory().getPath() + "/Comics/";
 		String libraryRootPath = prefs.getString(KEY_LIBRARY_ROOT_PATH, defaultRoot);
@@ -484,12 +494,32 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	}
 	
 	private void savePreferences() {
-		SharedPreferences prefs = getSharedPreferences(CONFIG_NAME, MODE_PRIVATE);
+		SharedPreferences prefs = getSharedPreferences(PREF_CONFIG_NAME, MODE_PRIVATE);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(KEY_LIBRARY_ROOT_PATH, mAppConfig.getLibraryRootPath());
 		editor.putBoolean(KEY_LEFT_TO_RIGHT, mAppConfig.getFlagLeftToRight());
 		editor.commit();
-
+	}
+	
+	private void loadLastBook() {
+		SharedPreferences prefs = getSharedPreferences(PREF_LAST_BOOK, MODE_PRIVATE);
+		
+		String lastBookPath = prefs.getString(KEY_LAST_BOOK_TITLE_PATH, "");
+		int lastBookIndex = prefs.getInt(KEY_LAST_BOOK_INDEX, 0);
+		int lastPageIndex = prefs.getInt(KEY_LAST_PAGE_INDEX, 0);
+		
+		if (lastBookPath.isEmpty()) return;
+		
+		this.loadBook(lastBookPath, lastBookIndex, lastPageIndex);
+	}
+	
+	private void saveLastBook() {
+		SharedPreferences prefs = getSharedPreferences(PREF_LAST_BOOK, MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(KEY_LAST_BOOK_TITLE_PATH, mCurrentBook.getBookTitlePath());
+		editor.putInt(KEY_LAST_BOOK_INDEX, mCurrentBook.getCurrentBookIndex());
+		editor.putInt(KEY_LAST_PAGE_INDEX, mCurrentBook.getCurrentPageIndex());
+		editor.commit();
 	}
 
 }
