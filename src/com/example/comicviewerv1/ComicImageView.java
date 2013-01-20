@@ -9,13 +9,9 @@ import android.view.View;
 
 public class ComicImageView extends View {
 	
-	public static final int SLIDE_NO_EFFECT = 0;
-	public static final int SLIDE_FROM_RIGHT = 1;
-	public static final int SLIDE_FROM_LEFT = -1;
 	
 	private static final float PAGE_FEED_THRESHOLD = (float)7.0; // 10% slide will make next page
 	private Bitmap image = null;
-	private int slideEffect = SLIDE_NO_EFFECT;
 	private int canvasWidth = 0;
 	private int hShift = 0;  // horizontal shift bias by scroll
 	
@@ -25,9 +21,8 @@ public class ComicImageView extends View {
 		super(context);
 	}
 	
-	public void setBitmap(Bitmap temp, int slideEffect) {
+	public void setBitmap(Bitmap temp) {
 		this.image = temp;
-		this.slideEffect = slideEffect;
 	}
 	
 

@@ -31,6 +31,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -59,6 +61,10 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	private static final String KEY_LAST_BOOK_TITLE_PATH = "book_title_path";
 	private static final String KEY_LAST_BOOK_INDEX = "last_book_index";
 	private static final String KEY_LAST_PAGE_INDEX = "last_page_index";
+
+	public static final int SLIDE_NO_EFFECT = 0;
+	public static final int SLIDE_FROM_RIGHT = 1;
+	public static final int SLIDE_FROM_LEFT = -1;
 
 
 	private ComicImageView mComicImageView = null;
@@ -94,7 +100,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	public void toggleReadDirection(View v) {
 		mAppConfig.setFlagLeftToRight(!mAppConfig.getFlagLeftToRight());
 		updateControlViewInfo();
-		openPage(ComicImageView.SLIDE_NO_EFFECT);
+		openPage(SLIDE_NO_EFFECT);
 	}
 	
 	public void changeLibraryPath(View v) {
@@ -118,7 +124,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	public void prevBook(View v) {
 		
 		if (mCurrentBook.prevBook()) {
-			openPage(ComicImageView.SLIDE_NO_EFFECT);
+			openPage(SLIDE_NO_EFFECT);
 		} else {
 			Toast.makeText(getApplicationContext(), R.string.firstbook,
 					Toast.LENGTH_SHORT).show();
@@ -128,7 +134,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	
 	public void nextBook(View v) {
 		if (mCurrentBook.nextBook()) {
-			openPage(ComicImageView.SLIDE_NO_EFFECT);
+			openPage(SLIDE_NO_EFFECT);
 		} else {
 			Toast.makeText(getApplicationContext(), R.string.lastbook,
 					Toast.LENGTH_SHORT).show();
@@ -152,7 +158,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	
 	public void prev20Page(View v) {
 		if (mCurrentBook.prevPage(20)) {
-			openPage(ComicImageView.SLIDE_NO_EFFECT);
+			openPage(SLIDE_NO_EFFECT);
 		} else {
 			Toast.makeText(getApplicationContext(), R.string.firstpage,
 						Toast.LENGTH_SHORT).show();
@@ -162,7 +168,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	
 	public void next20Page(View v) {
 		if (mCurrentBook.nextPage(20)) {
-			openPage(ComicImageView.SLIDE_NO_EFFECT);
+			openPage(SLIDE_NO_EFFECT);
 		} else {
 			Toast.makeText(getApplicationContext(), R.string.lastpage,
 						Toast.LENGTH_SHORT).show();
@@ -337,13 +343,13 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 		if (!mCurrentBook.load(bookIndex, pageIndex)) {
 			return false;
 		}
-		return openPage(ComicImageView.SLIDE_NO_EFFECT);
+		return openPage(SLIDE_NO_EFFECT);
 	}
 	
 	/**
 	 * 
 	 * @param pageIndex
-	 * @param slideEffect : 0 (no slide effect), 1 (slide from right), -1 (slide from left)
+	 * @param slideEffect
 	 * @return
 	 */
 	public boolean openPage(int slideEffect) {
@@ -423,8 +429,25 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 			return false;
 		}
 		
-		mComicImageView.setBitmap(finalImg, slideEffect);
-		mComicImageView.invalidate();
+		mComicImageView.setVisibility(View.INVISIBLE);
+		mComicImageView.setBitmap(finalImg);
+		
+
+		if (this.SLIDE_FROM_LEFT == slideEffect) {
+			Log.d("HSHIM", "SLIDE_FROM_LEFT");
+			Animation slide = AnimationUtils.loadAnimation(this, R.anim.slidein_left2right);
+			mComicImageView.startAnimation(slide);
+		} else if (this.SLIDE_FROM_RIGHT == slideEffect) {
+			Log.d("HSHIM", "SLIDE_FROM_RIGHT");
+			Animation slide = AnimationUtils.loadAnimation(this, R.anim.slidein_right2left);
+			mComicImageView.startAnimation(slide);
+		} else {
+			mComicImageView.invalidate();
+		}
+		mComicImageView.setVisibility(View.VISIBLE);
+
+		
+		
 		saveLastBook();
 		return true;
 	}
@@ -453,7 +476,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	public boolean nextPage(int n) {
 		
 		if (mCurrentBook.nextPage(n)) {
-			openPage(ComicImageView.SLIDE_FROM_RIGHT);
+			openPage(SLIDE_FROM_RIGHT);
 		} else {
 			Toast.makeText(getApplicationContext(), 
 						R.string.lastpage, Toast.LENGTH_SHORT).show();
@@ -464,7 +487,7 @@ public class FullscreenActivity extends Activity implements OnGestureListener {
 	
 	public boolean prevPage(int n) {
 		if (mCurrentBook.prevPage(n)) {
-			openPage(ComicImageView.SLIDE_FROM_LEFT);
+			openPage(SLIDE_FROM_LEFT);
 		} else {
 			Toast.makeText(getApplicationContext(), 
 						R.string.firstpage, Toast.LENGTH_SHORT).show();
